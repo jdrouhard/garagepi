@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"> <title>Garage Control</title>
+    <script type="text/javascript" src="/webiopi.js"></script>
+    <script type="text/javascript">
+	function mousedown(event) {
+		var lettersRegex = /[^0-9]/gi;
+		var gpio = event.target['id'].replace(lettersRegex, '');
+		webiopi().digitalWrite(parseInt(gpio), 1);
+	}
+
+	function mouseup(event) {
+		var lettersRegex = /[^0-9]/gi;
+		var gpio = event.target['id'].replace(lettersRegex, '');
+		webiopi().digitalWrite(parseInt(gpio), 0);
+	}
+
+        webiopi().ready(function() {
+            // Create a "Light" labeled button for GPIO 17, 27, and 22
+            var button = webiopi().createButton('gpio17', "Garage 1", mousedown, mouseup);
+            var button2 = webiopi().createButton('gpio27', "Garage 2", mousedown, mouseup);
+            var button3 = webiopi().createGPIOButton(22, "Lights");
+            // Append button to HTML element with ID="controls" using jQuery
+            $("#garage1").append(button);
+            $("#garage2").append(button2);
+            $("#lights").append(button3);
+            // Refresh GPIO buttons
+            // pass true to refresh repeatedly of false to refresh once
+            webiopi().refreshGPIO(true);
+        });
+
+    </script>
+    <style type="text/css">
+    button {
+            display: block;
+            margin: 5px 5px 5px 5px; width: 1280px;
+            height: 720px;
+            font-size: 100pt;
+            font-weight: bold; color:white;
+    }
+    #gpio17.LOW {
+        background-color: Black; }
+    #gpio17.HIGH {
+        background-color: Yellow; }
+    #gpio27.LOW {
+        background-color: Black; }
+    #gpio27.HIGH {
+        background-color: Yellow; }
+    #gpio22.LOW {
+        background-color: Black; }
+    #gpio22.HIGH {
+        background-color: Yellow; }
+    </style>
+</head>
+<body>
+    <div id="garage1" align="center"></div>
+    <div id="garage2" align="center"></div>
+    <div id="lights" align="center"></div>
+</body> </html>
