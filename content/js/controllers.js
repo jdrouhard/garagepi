@@ -42,31 +42,31 @@ angular.module('garagePi')
         //}
     //}])
 
-    .directive('stream', ['WebcamService', function(WebcamService) {
-        return {
-            restrict: 'A',
-            scope: {
-                url: '@'
-            },
-            replace: true,
-            template: '<img ng-src="{{url}}" class="img-responsive center-block"></img>',
-            link: function(scope, elem) {
-                scope.url = '';
-                var getCurrentImage = function() {
-                    WebcamService.getImageBlob(scope.url, function(imageUrl) {
-                        scope.url = imageUrl;
-                        elem.bind('load', function() {
-                            WebcamService.releaseImageBlob(imageUrl);
-                        });
-                        getCurrentImage();
-                    });
-                };
+    //.directive('stream', ['WebcamService', function(WebcamService) {
+        //return {
+            //restrict: 'A',
+            //scope: {
+                //url: '@'
+            //},
+            //replace: true,
+            //template: '<img ng-src="{{url}}" class="img-responsive center-block"></img>',
+            //link: function(scope, elem) {
+                //scope.url = '';
+                //var getCurrentImage = function() {
+                    //WebcamService.getImageBlob(scope.url, function(imageUrl) {
+                        //scope.url = imageUrl;
+                        //elem.bind('load', function() {
+                            //WebcamService.releaseImageBlob(imageUrl);
+                        //});
+                        //getCurrentImage();
+                    //});
+                //};
 
-                getCurrentImage();
+                //getCurrentImage();
 
-            }
-        }
-    }])
+            //}
+        //}
+    //}])
 
     .directive('gpioButton', ['GPIOService', function(GPIOService) {
         return {

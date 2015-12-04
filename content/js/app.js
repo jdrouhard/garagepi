@@ -18,14 +18,14 @@ angular.module('garagePi', [
         });
 }])
 
-.run(['$rootScope', '$location', '$cookieStore', '$http', function($rootScope, $location, $cookieStore, $http) {
-    $rootScope.globals = $cookieStore.get('globals') || {};
-    if ($rootScope.globals.currentUser) {
-        $http.defaults.headers.common.Authorization = 'Basic ' + $rootScope.globals.currentUser.authdata;
+.run(['$rootScope', '$location', '$cookies', '$http', function($rootScope, $location, $cookies, $http) {
+    $rootScope.authData = $cookies.get('x_authorization');
+    if ($rootScope.authData) {
+        $http.defaults.headers.common.Authorization = 'Basic ' + $rootScope.authData;
     }
 
     $rootScope.$on("$routeChangeStart", function(event, next, current) {
-        if ($location.path() !== '/login' && !$rootScope.globals.currentUser) {
+        if ($location.path() !== '/login' && !$rootScope.authData) {
             $location.path('/login');
         }
     });

@@ -1,5 +1,15 @@
 #vim: ft=conf
 
+map $http_authorization $auth_token {
+	default "";
+	"~^Basic (?P<token>.+)" $token;
+}
+
+map $escaped_auth_cookie $authorization {
+	default $auth_token;
+	"~^(?P<auth>.+)" $auth;
+}
+	
 server {
 	#root /var/www;
 	root /home/pi/garagepi/content
@@ -22,11 +32,23 @@ server {
 	}
 
 	location /camera {
-		rewrite /camera(.*) $1 break;
-		proxy_pass	http://localhost:8080;
+		set_unescape_uri $escaped_auth_cookie $cookie_x_authorization;
+		proxy_set_header Authorization "Basic ${authorization}";
+		proxy_pass	http://localhost:9010;
 		proxy_redirect	off;
 		proxy_hide_header WWW-Authenticate;
 	}
 
+}
+
+server {
+	listen 9010;
+	auth_basic "secure access";
+	auth_basic_user_file /etc/nginx/httpd.passwd;
+	location /camera {
+		rewrite /camera(.*) $1 break;
+		proxy_pass	http://localhost:8080;
+		proxy_redirect	off;
+	}
 }
 

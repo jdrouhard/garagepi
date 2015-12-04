@@ -1,6 +1,6 @@
 angular.module('garagePi')
-    .factory('AuthenticationService', ['Base64', '$http', '$cookieStore', '$rootScope', '$timeout', '$q',
-            function(Base64, $http, $cookieStore, $rootScope, $timeout, $q) {
+    .factory('AuthenticationService', ['Base64', '$http', '$cookies', '$rootScope', '$timeout', '$q',
+            function(Base64, $http, $cookies, $rootScope, $timeout, $q) {
                 var service = {};
 
                 service.Login = function(username, password, callback) {
@@ -30,22 +30,14 @@ angular.module('garagePi')
 
                 service.SetCredentials = function(username, password) {
                     var authdata = Base64.encode(username + ':' + password);
-
-                    $rootScope.globals = {
-                        currentUser: {
-                            username: username,
-                            password: password,
-                            authdata: authdata
-                        }
-                    };
-
+                    $rootScope.authData = authdata;
                     $http.defaults.headers.common.Authorization = 'Basic ' + authdata;
-                    $cookieStore.put('globals', $rootScope.globals);
+                    $cookies.put('x_authorization', authdata);
                 };
 
                 service.ClearCredentials = function() {
-                    $rootScope.globals = {};
-                    $cookieStore.remove('globals');
+                    delete $rootScope.authData;
+                    $cookies.remove('x_authorization');
                     $http.defaults.headers.common.Authorization = 'Basic ';
                 };
 
@@ -53,30 +45,30 @@ angular.module('garagePi')
             }
     ])
 
-    .factory('WebcamService', ['$http', '$timeout', function($http, $timeout) {
-        var webcamService = {};
-        var urlCreator = window.URL || window.webkitURL;
+    //.factory('WebcamService', ['$http', '$timeout', function($http, $timeout) {
+        //var webcamService = {};
+        //var urlCreator = window.URL || window.webkitURL;
 
-        webcamService.releaseImageBlob = function(imageUrl) {
-            urlCreator.revokeObjectURL(imageUrl);
-        };
+        //webcamService.releaseImageBlob = function(imageUrl) {
+            //urlCreator.revokeObjectURL(imageUrl);
+        //};
 
-        webcamService.getImageBlob = function(imageUrl, callback) {
-            $http.get('/camera/?action=snapshot', {responseType: 'arraybuffer'})
-                .success(function(result) {
-                    var arrayBuffer = new Uint8Array(result);
-                    var blob = new Blob([arrayBuffer], { type: 'image/jpeg' } );
-                    var imageUrl = urlCreator.createObjectURL(blob);
-                    arrayBuffer = blob = null;
-                    if (callback) {
-                        callback(imageUrl);
-                    }
-                    imageUrl = null;
-                });
-        };
+        //webcamService.getImageBlob = function(imageUrl, callback) {
+            //$http.get('/camera/?action=snapshot', {responseType: 'arraybuffer'})
+                //.success(function(result) {
+                    //var arrayBuffer = new Uint8Array(result);
+                    //var blob = new Blob([arrayBuffer], { type: 'image/jpeg' } );
+                    //var imageUrl = urlCreator.createObjectURL(blob);
+                    //arrayBuffer = blob = null;
+                    //if (callback) {
+                        //callback(imageUrl);
+                    //}
+                    //imageUrl = null;
+                //});
+        //};
 
-        return webcamService;
-    }])
+        //return webcamService;
+    //}])
 
     .factory('GPIOService', ['$http', '$timeout', function($http, $timeout) {
         var gpioService = {};
