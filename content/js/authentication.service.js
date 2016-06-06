@@ -29,7 +29,7 @@
             });
         }
 
-        function login(username, password, callback) {
+        function login(username, password) {
             var authdata = base64.encode(username + ':' + password);
             var webiopiLogin = $http.get('/api/*', {
                 headers: {
@@ -44,18 +44,17 @@
                 withCredentials: true
                 });
 
-            $q.all([webiopiLogin, raspicamLogin])
+            return $q.all([webiopiLogin, raspicamLogin])
                 .then(loginSuccess, loginFail);
 
             function loginSuccess() {
-                console.log('success!');
+                // console.log('success!');
                 service.setCredentials(username, password);
-                callback({ success: true });
             }
 
             function loginFail() {
-                console.log('fail!');
-                callback({ success: false, message: "Could not authenticate with the GaragePi" });
+                // console.log('fail!');
+                return $q.reject();
             };
         }
 

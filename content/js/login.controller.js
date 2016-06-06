@@ -17,16 +17,17 @@
         function login() {
             vm.dataLoading = true;
 
-            authenticationService.login(vm.username, vm.password, loginCallback);
+            authenticationService
+                .login(vm.username, vm.password)
+                .then(loginSuccess, loginFail);
 
-            function loginCallback(response) {
-                if (response.success) {
-                    $location.path('/');
-                }
-                else {
-                    vm.error = response.message;
-                    vm.dataLoading = false;
-                }
+            function loginSuccess() {
+                $location.path('/');
+            }
+
+            function loginFail() {
+                vm.error = 'Could not authenticate with the GaragePi';
+                vm.dataLoading = false;
             }
         }
     }
