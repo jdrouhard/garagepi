@@ -11,8 +11,7 @@ map $escaped_auth_cookie $authorization {
 }
 	
 server {
-	#root /var/www;
-	root /home/pi/garagepi/content
+	root /home/pi/garagepi/content;
 	index index.html index.htm;
 
 	# Make site accessible from http://localhost/
