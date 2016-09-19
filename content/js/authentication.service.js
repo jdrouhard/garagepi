@@ -5,9 +5,9 @@
         .module('garagePi')
         .factory('authenticationService', authenticationService);
 
-    authenticationService.$inject = ['base64', '$http', '$cookies', '$rootScope', '$timeout', '$q', '$location'];
+    authenticationService.$inject = ['base64', '$http', '$cookies', '$rootScope', '$q', '$location'];
 
-    function authenticationService(base64, $http, $cookies, $rootScope, $timeout, $q, $location) {
+    function authenticationService(base64, $http, $cookies, $rootScope, $q, $location) {
         var service = {
             initialize: initialize,
             login: login,
@@ -30,39 +30,33 @@
         }
 
         function login(username, password) {
-            var authdata = base64.encode(username + ':' + password);
-            var webiopiLogin = $http.get('/api/*', {
+            var authData = base64.encode(username + ':' + password);
+            var authHeaders = {
                 headers: {
-                    'Authorization': 'Basic ' + authdata
+                    'Authorization': 'Basic ' + authData
                 },
                 withCredentials: true
-                });
-            var raspicamLogin = $http.get('/camera/index.html', {
-                headers: {
-                    'Authorization': 'Basic ' + authdata
-                },
-                withCredentials: true
-                });
+            };
+
+            var webiopiLogin = $http.get('/api/*', authHeaders);
+            var raspicamLogin = $http.get('/camera/index.html', authHeaders);
 
             return $q.all([webiopiLogin, raspicamLogin])
                 .then(loginSuccess, loginFail);
 
             function loginSuccess() {
-                // console.log('success!');
-                service.setCredentials(username, password);
+                service.setCredentials(authData);
             }
 
             function loginFail() {
-                // console.log('fail!');
                 return $q.reject();
             };
         }
 
-        function setCredentials(username, password) {
-            var authdata = base64.encode(username + ':' + password);
-            $rootScope.authData = authdata;
-            $http.defaults.headers.common.Authorization = 'Basic ' + authdata;
-            $cookies.put('x_authorization', authdata);
+        function setCredentials(authData) {
+            $rootScope.authData = authData;
+            $http.defaults.headers.common.Authorization = 'Basic ' + authData;
+            $cookies.put('x_authorization', authData);
         }
 
         function clearCredentials() {
