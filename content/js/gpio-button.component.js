@@ -1,10 +1,6 @@
 (function() {
     'use strict';
 
-    angular
-        .module('garagePi')
-        .component('gpioButton', gpioButtonOptions);
-
     var gpioButtonOptions = {
         bindings: {
             gpio: '@',
@@ -18,12 +14,16 @@
         controller: GpioController
     };
 
+    angular
+        .module('garagePi')
+        .component('gpioButton', gpioButtonOptions);
 
     GpioController.$inject = ['gpioService', '$element'];
 
     function GpioController(gpioService, $element) {
-        var BUTTON_DOWN = 'mousedown touchstart';
-        var BUTTON_UP = 'mouseup touchend';
+        var isTouchDevice = 'ontouchstart' in document.documentElement ? true : false;
+        var BUTTON_DOWN = isTouchDevice ? 'touchstart' : 'mousedown';
+        var BUTTON_UP = isTouchDevice ? 'touchend' : 'mouseup';
 
         var vm = this;
         vm.$onInit = init;
