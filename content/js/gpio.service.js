@@ -5,12 +5,13 @@
         .module('garagePi')
         .factory('gpioService', gpioService);
 
-    gpioService.$inject = ['$http', '$timeout'];
+    gpioService.$inject = ['$http', '$interval'];
 
-    function gpioService($http, $timeout) {
+    function gpioService($http, $interval) {
         var observers = [];
 
         refreshGPIOs();
+        $interval(refreshGPIOs, 1000);
 
         var service = {
             GPIOs: {},
@@ -41,7 +42,6 @@
                     service.GPIOs[gpio] = data['value'];
                 });
                 notifyObservers();
-                $timeout(refreshGPIOs, 1000);
             });
         }
     }
