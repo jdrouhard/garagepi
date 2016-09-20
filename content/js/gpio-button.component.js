@@ -45,6 +45,7 @@
 
         function destroy() {
             $element.off(BUTTON_DOWN + ' ' + BUTTON_UP);
+            gpioService.unregisterObserver(updateVal);
         }
 
         function mousedown() {

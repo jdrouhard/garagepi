@@ -5,18 +5,17 @@
         .module('garagePi')
         .factory('gpioService', gpioService);
 
-    gpioService.$inject = ['$http', '$interval'];
+    gpioService.$inject = ['$http', '$timeout'];
 
-    function gpioService($http, $interval) {
+    function gpioService($http, $timeout) {
         var observers = [];
-
-        refreshGPIOs();
-        $interval(refreshGPIOs, 1000);
+        var stopRefresh;
 
         var service = {
             GPIOs: {},
             digitalWrite: digitalWrite,
-            registerObserver: registerObserver
+            registerObserver: registerObserver,
+            unregisterObserver: unregisterObserver
         };
         return service;
 
@@ -28,6 +27,20 @@
 
         function registerObserver(observer) {
             observers.push(observer);
+            if (observers.length == 1) {
+                refreshGPIOs();
+            }
+        }
+
+        function unregisterObserver(observer) {
+            var it = observers.indexOf(observer);
+            if (it != -1) {
+                observers.splice(it, 1);
+            }
+            if (observers.length == 0 && angular.isDefined(stopRefresh)) {
+                $timeout.cancel(stopRefresh);
+                stopRefresh = undefined;
+            }
         }
 
         function notifyObservers() {
@@ -42,6 +55,9 @@
                     service.GPIOs[gpio] = data['value'];
                 });
                 notifyObservers();
+                if (observers.length > 0) {
+                    stopRefresh = $timeout(refreshGPIOs, 1000);
+                }
             });
         }
     }
