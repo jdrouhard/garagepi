@@ -12,7 +12,7 @@
         vm.dataLoading = false;
         vm.login = login;
 
-        authenticationService.clearCredentials();
+        //authenticationService.clearCredentials();
 
         function login() {
             vm.dataLoading = true;

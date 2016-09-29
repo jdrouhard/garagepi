@@ -5,64 +5,76 @@
         .module('garagePi')
         .factory('authenticationService', authenticationService);
 
-    authenticationService.$inject = ['base64', '$http', '$cookies', '$rootScope', '$q', '$location'];
+    authenticationService.$inject = ['$http', '$rootScope', '$q', '$location'];
 
-    function authenticationService(base64, $http, $cookies, $rootScope, $q, $location) {
+    function authenticationService($http, $rootScope, $q, $location) {
         var service = {
             initialize: initialize,
+            relogin: relogin,
             login: login,
-            setCredentials: setCredentials,
-            clearCredentials: clearCredentials
+            logout: logout
         };
         return service;
 
+        var session = false;
+        var user;
+
         function initialize() {
-            $rootScope.authData = $cookies.get('x_authorization');
-            if ($rootScope.authData) {
-                $http.defaults.headers.common.Authorization = 'Basic ' + $rootScope.authData;
+            return $http.get('/session')
+                .then(success, fail)
+                .then(routeProtect);
+
+            function success() {
+                session = true;
             }
 
-            $rootScope.$on("$routeChangeStart", function(event, next, current) {
-                if ($location.path() !== '/login' && !$rootScope.authData) {
-                    $location.path('/login');
-                }
-            });
+            function fail() {
+                session = false;
+            }
+
+            function routeProtect() {
+                $rootScope.$on("$routeChangeStart", function(event, next, current) {
+                    if ($location.path() !== '/login' && !session) {
+                        $location.path('/login');
+                    }
+                });
+            }
+        }
+
+        function relogin() {
+            if (!user) {
+                session = false;
+                return $q.reject();
+            }
+
+            return login(user.username, user.password);
         }
 
         function login(username, password) {
-            var authData = base64.encode(username + ':' + password);
-            var authHeaders = {
-                headers: {
-                    'Authorization': 'Basic ' + authData
-                },
-                withCredentials: true
-            };
-
-            var webiopiLogin = $http.get('/api/*', authHeaders);
-            var raspicamLogin = $http.get('/camera/index.html', authHeaders);
-
-            return $q.all([webiopiLogin, raspicamLogin])
-                .then(loginSuccess, loginFail);
+            return $http.post('/session', {
+                username: username,
+                password: password
+            }).then(loginSuccess, loginFail);
 
             function loginSuccess() {
-                service.setCredentials(authData);
+                session = true;
+                user = {
+                    username: username,
+                    password: password
+                };
             }
 
             function loginFail() {
+                session = false;
+                user = undefined;
                 return $q.reject();
             };
         }
 
-        function setCredentials(authData) {
-            $rootScope.authData = authData;
-            $http.defaults.headers.common.Authorization = 'Basic ' + authData;
-            $cookies.put('x_authorization', authData);
-        }
-
-        function clearCredentials() {
-            delete $rootScope.authData;
-            $cookies.remove('x_authorization');
-            $http.defaults.headers.common.Authorization = 'Basic ';
+        function logout() {
+            session = false;
+            user = undefined;
+            return $http.delete('/session');
         }
     }
 })();

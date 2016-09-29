@@ -9,12 +9,15 @@
   },
   "author": "John Drouhard <john@jmdtech.org>",
   "dependencies": {
-    "cookie-parser": "^1.4.3",
+    "body-parser": "^1.15.2",
     "express": "^4.14.0",
     "express-session": "^1.14.1",
+    "fs": "0.0.1-security",
     "morgan": "^1.7.0",
     "passport": "^0.3.2",
     "passport-local": "^1.0.0",
-    "passport-local-sequelize": "^0.6.0"
+    "passport-local-sequelize": "^0.6.0",
+    "path": "^0.12.7",
+    "sqlite3": "^3.1.4"
   }
 }

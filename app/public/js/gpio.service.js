@@ -20,9 +20,11 @@
         return service;
 
         function digitalWrite(gpio, value) {
-            $http.post('/api/GPIO/' + gpio + '/value/' + value).success(function() {
+            $http.post('/api/GPIO/' + gpio + '/value/' + value).then(setValue);
+
+            function setValue() {
                 service.GPIOs[gpio] = value;
-            });
+            }
         }
 
         function registerObserver(observer) {
@@ -50,15 +52,17 @@
         }
 
         function refreshGPIOs() {
-            $http.get('/api/*').success(function(response) {
-                angular.forEach(response['GPIO'], function(data, gpio) {
+            $http.get('/api/*').then(parseResponse);
+
+            function parseResponse(response) {
+                angular.forEach(response.data['GPIO'], function(data, gpio) {
                     service.GPIOs[gpio] = data['value'];
                 });
                 notifyObservers();
                 if (observers.length > 0) {
                     stopRefresh = $timeout(refreshGPIOs, 1000);
                 }
-            });
+            }
         }
     }
 })();
