@@ -35,6 +35,7 @@
             function routeProtect() {
                 $rootScope.$on("$routeChangeStart", function(event, next, current) {
                     if ($location.path() !== '/login' && !session) {
+                        event.preventDefault();
                         $location.path('/login');
                     }
                 });

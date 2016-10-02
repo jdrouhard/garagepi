@@ -3,6 +3,7 @@ var express       = require('express')
   , morgan        = require('morgan')
   , bodyParser    = require('body-parser')
   , session       = require('express-session')
+  , request       = require('request')
   , config        = require('./config')
   , models        = require('./models');
 
@@ -56,20 +57,15 @@ app.delete('/session', function(req, res) {
 
 
 // GPIO ROUTES
-app.get('/api*', isLoggedIn, function(req, res) {
-    // TODO
-    res.send('protected resource!');
-});
-
-app.post('/api*', isLoggedIn, function(req, res) {
-    // TODO
-    res.send('protected resource!');
+app.use('/api', isLoggedIn, function(req, res) {
+    var proxyUrl = 'http://localhost:8000' + req.url;
+    req.pipe(request(proxyUrl)).pipe(res);
 });
 
 // CAMERA ROUTE
-app.get('/camera*', isLoggedIn, function(req, res) {
-    // TODO
-    res.send('protected resource!');
+app.use('/camera', isLoggedIn, function(req, res) {
+    var proxyUrl = 'http://localhost:8080' + req.url;
+    req.pipe(request(url)).pipe(res);
 });
 
 function isLoggedIn(req, res, next) {
