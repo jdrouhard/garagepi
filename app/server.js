@@ -1,6 +1,7 @@
 var express       = require('express')
   , passport      = require('passport')
-  , morgan        = require('morgan')
+  , rpio          = require('rpio')
+  //, morgan        = require('morgan')
   , bodyParser    = require('body-parser')
   , session       = require('express-session')
   , request       = require('request')
@@ -8,15 +9,22 @@ var express       = require('express')
   , models        = require('./models');
 
 var app = express();
-var port = process.env.PORT || 8080;
+var port = process.env.PORT || 3000;
 
+// INITIALIZATION
 app.use(express.static(__dirname + '/public'));
+
+rpio.init({ gpiomem: false, mapping: 'gpio' });
+for (var gpio in config.gpios) {
+    rpio.open(parseInt(gpio), config.gpios[gpio]);
+}
+
 
 passport.use(models.User.createStrategy());
 passport.serializeUser(models.User.serializeUser());
 passport.deserializeUser(models.User.deserializeUser());
 
-app.use(morgan('dev'));
+//app.use(morgan('dev'));
 app.use(bodyParser.json());
 
 app.use(session({
@@ -57,9 +65,17 @@ app.delete('/session', function(req, res) {
 
 
 // GPIO ROUTES
-app.use('/api', isLoggedIn, function(req, res) {
-    var proxyUrl = 'http://localhost:8000' + req.url;
-    req.pipe(request(proxyUrl)).pipe(res);
+app.get('/api/\*', isLoggedIn, function(req, res) {
+    var gpios = {};
+    for (gpio in config.gpios) {
+        gpios[gpio] = { "value": rpio.read(parseInt(gpio)) };
+    }
+    res.json({"GPIO": gpios});
+});
+app.post('/api/GPIO/:pin/value/:value', isLoggedIn, function(req, res) {
+    var value = req.params.value == '0' ? rpio.LOW : rpio.HIGH;
+    rpio.write(parseInt(req.params.pin), value);
+    res.send(req.params.value);
 });
 
 // CAMERA ROUTE
